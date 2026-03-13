@@ -546,4 +546,48 @@ db.test.find({"list": {$size: 3}})  -> fetch arrays of this size
 
 # AVOID the or -> $elemMatch
 
-db.test.find({"list": 2})
+# ElemmMatch (important!!)
+
+db.testel.insertMany([
+    {_id: "player1", results: [{game: "pacman", score: 10}, {game: "pong", "score": 5}]},
+    {_id: "player2", results: [{game: "pacman", score: 5}, {game: "pong", "score": 7}]},
+])
+
+db.testel.find({
+    results: {$elemMatch: {game: "pacman", "score": 5}}
+})
+
+- finds 1 element
+
+db.testel.find({
+    "results.game": "pacman", "results.score": 5
+})
+
+- finds 2 elements
+
+# without elem match matches first element in array with second
+
+# with elem match the same element in results array has to satisfy both
+
+element match has to satisfy all condition in one concrete array element
+
+# Expressive queries
+- Use internal values of the documents to compose dynamic queries
+
+use sample_mflix
+
+- tomatoes.viewer.rating is greater than the value in imdb.rating
+- when gt has more than one value it compares 2 values
+
+db.movies.find({ 
+   $expr: { $gt: [ "$tomatoes.viewer.rating" ,"$imdb.rating" ] } 
+})
+
+- documents with scores.score  has average less than 50 (scores is an array)
+db.grades.find({ 
+    $expr: { $lt: [ 
+        { $avg: "$scores.score" },
+        50
+    ]}
+})
+
