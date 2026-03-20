@@ -1,0 +1,317 @@
+# ILT Private: MDB100: MongoDB Database and Security
+
+ILT: Instructor lead trainer
+Enter learn.mongodb.com go to dashboard and go to events, download presentations
+
+
+# mongo db atlas
+
+It is the SaaS of Mongo. It has a free tier, for a small pyme could even be enough
+
+# Why a new database
+
+- Its the most popular among no sql.
+
+- It seeks faster development, short cycles, more data
+
+- It has transparency regarding failures, scalability
+
+- Open source + atlas free or pay by usage.
+
+
+
+# MongoDB
+
+It tries to propose a simpler language by using one similar to java or python
+
+The mongo terminal has a node.js in the background so you can use js.
+
+However it has python drivers, java drivers etc. It recommends using its native drivers.
+
+
+## Certification:
+
+There are many, you can choose the python version or the java version.
+
+In the exam you will be asked to use the pymongo library. There is a sample exam (free).
+
+## Database
+
+- It uses a document model
+- It proposes an scalable system
+
+## Distributed systems: They fail in these situations
+
+- Try to ensure integrity
+- It tries to solve queries with many joins
+
+### Solution:
+
+Denormalization: Reduce the number of tables by kinda duplicating info instead of adding relations
+
+With 1 to N or N to N relations it will by complicated
+
+
+### New features
+
+Now we can store arrays in the database or JSON documents
+```sh
+{
+    name: dario
+    thing: ["array_el1", "array_el2"]
+}
+```
+
+This implies modifies all places in which the same info appears many times.
+
+EXAM example: In a library with books, the author usually does not change, you have to use that in order to reduce the number of modifications.
+
+
+### How it works
+
+- Under the hood: The database uses BSON (binary JSON)
+
+- There some concepts we have to know in the exam (we will see the last day)
+
+# Equivalence concepts
+
+1. Database -> database
+
+2. Tables -> Collections
+
+</br>
+
+**Namespace will be database + collection**
+
+3. Row -> document
+
+4. Column -> Field 
+
+5. Index -> Index
+
+</br>
+
+- If you create a document in a db and collection that does not exist, Mongo will automatically create the db and collection
+
+- We can create restricted documents (limit the schema). This allows you to get a better performance. 
+
+- Once you decide a schema, you can go from a schemaless document to a restricted one
+
+- In a collection you can have documents with different schema
+
+- We can insert the same document many times because mongo assign an ID automatically to it.
+
+
+```sh
+db.collection.insertOne(
+    [
+        product: "Mongo",
+        type: 1
+    ]
+)
+db.collection.findOne()
+```
+
+# GUI
+
+- We can use Compass to interact with MongoDB
+
+# Shell
+
+- It uses node.js
+
+# Fuctionalities
+
+- Complex queries
+- Edits
+- Aggregations
+
+- It auto reorders queries for efficiency (similar to SQL)
+
+# aVAILABILITY AND Scalability
+
+- It be a standalone server
+
+- Usually it offers high availability with a multinode setup: It has to be an odd (impar) number of nodes --> replica set
+
+- If the main node fails, a replica takes its place.
+
+- The driver auto handles this, as long as there is a maojority of nodes up (working) you will not notice anything
+
+- The replication is what gives us high availability --> Mongo automatically writes data  in secondary nodes from the primary
+
+## Scalability
+
+- The sharding gives it to us --> its like a partitioning
+- Each shard will be copied in many partitions
+
+Eg.
+
+my info is divided in 3 shards
+
+In node 1 we have shards a, b and c
+In node 2 we have shards a, b and c
+
+
+Example:
+
+We work for zara, one shard is zara asia.
+We have this shard in many replicas but all in a same cluster located in asia
+
+We have europe in another shard
+
+This means that each shard has different info
+
+
+EXAM: If you send an email explaining that you are not english native the can give you one hour extra
+
+# Enterprise Tooling
+
+- Atlas:
+
+MongoDB as a service (SaaS / PaaS): Your specify the cloud (AWS, Azure) WHERE YOU WANT TO DEPLOY  the nodes and they manage it.
+It allows even a multicloud Azure + GPC
+It does the provisioning automatically but you can not connect with ssh to these machines
+
+- Ops Manager: GUI to monitor, manage, alert or backup your servers
+
+- Cloud Manager: Ops manager in the cloud
+
+- Kubernetes operator (deploy in containers)
+- Terraform provider for hashicorp
+
+# When to use mongo (EXAM)
+
+- High speed access to objects
+  - Atomic partial updates
+  - Fast retrieval
+  - Secondary indexes: it has many types of indexes, and composite indexes with many data types
+  - Aggregation capabilities
+
+- When you want to store large data structures together
+  - Large arrays
+  - Text fields
+  - Binary data
+  - Vector data: Has reranking and other systems included
+
+- Rapid development
+  - Uses objects similar to many languages
+  - Rich functionality
+
+- When the structure of the objects vary
+  - Define schemas in the app
+  - Heterogeneous data
+
+- Lange volumnes of data
+  - It grows
+  - You dont have to pay upfront, scale when you want
+
+- When you need large volumes of data
+  - Based on latency in different parts of the world
+  - When to need to store data in its origin location per complicance (GRPD) --> CONFIGURE SHARDING TO DO THAT
+
+# Things to be conscious of
+
+- Its easy to develop but its easy to do things wrong
+- We need database administrators
+
+
+- Hence we must follow the recommended best practices
+
+# MongoDB vs RDBMS
+
+## rdbms
+
+- data stored binary in disk
+
+- data indexed
+
+- you can do atomic updates in one or more rows
+
+- you can aggregate
+
+- fixed schemas
+
+- dtypes predefined
+
+- you can join data together
+
+## MONGO
+
+- first points are similar to rdbms (binary data, indexes, atomic updates)
+
+- yOU Could fix schema and dtypes but it is not mandatory
+
+- you could do something similar to a join
+
+- you could use sql with a BI connector (not ideal)
+
+## Differences
+
+- SQL is not the intended way, only in specifgic cases like compatibility with other tools
+
+- Everything will be documents (or also called objects)
+
+- Varying schemas
+
+- PRIMARY KEY: field "_id" if you do not send it, it will autocreate it
+  - It has to be an uuid
+  - One part will have a timestamp
+  - Hence, it is unique and increases
+  - It is the unique field that will be always indexed
+
+# Mongo DB atlas platform
+
+They can ask in the EXAM which functionalities offer atlas.
+
+- Extract data from our normal storage to a cheaper one like S3
+  - Example: we only update the data from this month and also query this month data -> we can configure atlas to move the data to S3 after to a month
+
+- MQL: Mongo queries -> We can redirect them to the cheaper s3 or the the main instance
+
+- Atlas charts: Like a grafana inside atlas
+
+- Atlas search: Uses the elastic search engine to do semantic search (text that contains, text with synonyms, related text) --> Its like an elastic search inside mongo
+
+- Vector search: Vectorial db
+
+- Hybrid cloud: Not native in atlas, you need another layer (OPS MANAGER or cloud manager)
+
+# Atlas managed clusters
+
+- High availability scalable clusters in AWS / GCP / AZURE
+- It has also an API so you could control it with ansible
+
+## Setting up Mongo DB atlas
+
+- Free tier:
+  - 3 nodes in different datacenters
+  - 512 mb storage
+  - secure by default
+
+
+We have
+
+- Organizations
+  - Projects
+    - Clusters
+
+All clusters in one project have the same security settings. If we have a dev and a prod environment we will have 2 projects even if they have only one cluster
+
+## Connect to atlas
+
+1. Password
+2. Certificate
+3. AWS IAM
+4. Federated auth, eg the LDAP from my company or any system you provide (there are some options, see workforce auth in atlas)
+
+- You need to add your ip to a list of authorized ips
+- You need to add specific privileges or roles for the database you are going to use.
+
+# Mongo DB laboratory
+
+https://play.instruqt.com/mongodb-ps/invite/x97tdl0fwuuy
+
+It is a virtual machine with data inside that we will use to solve exercises
+
+Alternative, you can use wsl
