@@ -423,3 +423,183 @@ we have to consider the number of read and writes to do a good sharding
      - this is not well designed.
 
 we will want to resolve the problem with the minimum number of shards
+
+
+# Sharidng: distributing operartions
+
+how do we choose the sharding key? example group by stores as we saw
+
+
+Query --> driver -> mongoS --> query config cluster -> redirect to the shard
+
+- If we we do not send the shard id, it will be sent to all shards (the query) and will only answer the right one
+
+- If the query contains the shard key, it will be only requested to the correct one
+
+- IF THE query contains info from many shards -> mongoS has to do a Merge and sort operation (which is slow)
+    - We prefer querys that affect only one shard
+
+# Sharded operaitons: best practices
+
+- Have a good shard key
+
+- query the lowest number of shards
+
+- if a shard is down (an entire replica set), only some operatiosn will fail
+
+
+- when a query can not point to a shard --> broadcast it (scatter gather)
+- if a shard is down:
+    - all scather gather queries will fail (operations that need many shards)
+
+# Choosing shard keys
+
+- Included in most queries
+- reasonably high cardinality (segregate the data and usage) . with 3 shards we can not use male / female as key
+- ideally no more than 128mb of data to share a shard key value
+- co-locates data you want to retrieve together.
+
+
+Effects of a bad key:
+    - broadcast queries
+    - uneven distribution of data
+    - slow down network  if we need to $lookup ( search in different collections, its like a join)
+
+SHARD ONLY large collections
+
+Use compound keuys: eg bank account + transaction_time + session_id  -> segregate by date
+
+If its not possible to create a good key by inspecting the queries --> use fields that allow parallelism (distribute worload)
+
+
+# changing shard keys
+
+- its possible but avoid if possible
+    - it will be like a migration
+    - better to add another field to refine the key
+    . get the highest cardinality (segregated data)
+
+- you could hash the username and use that as key (idea)
+- you could use username + date
+
+
+If a shard key is monotonically ascending, it is not a good idea. eg the editon of a newspaper -_> over time we will store in the last shard only and we will query only the lat shard  --> SOLUTION. use a hash to add some randomness
+
+
+- atlas limits to 4 TB per shard
+
+
+
+# BACKUPS
+
+Basic backup operations.
+
+# why backups
+
+data is really valuable. we need to be able to recover
+
+
+# causes of data lñoss
+
+- human error
+- db failure corrupt
+- system failure
+- security break
+
+
+# what is the hardest thing about backups
+
+- they need to be planned
+
+- the hardest thing: be able to test them and recover them, if not is like haviong nothing
+
+
+# Backup plan
+
+RPO: recovery point objective --> how much data you can afford to lose?
+RTO: recovery time objective -> eg every hour, however if it takes more to apply it, its not real. here the sharding helps
+
+- plan the backup retention time (since when we have copies, do we have the copy from last year? would it be useful?)
+
+
+# Backup methods
+
+- mongo db atlas continous cloud backups or cloud backups
+- mongo db cloud manager or ops manager, backup snapshot
+
+- non managed
+
+# Atlas backup methods
+
+- Cloud backup: snapshots native from aws or azure --> simpler, non managed by us
+- continous cloud backups: saves snapshots and the OPLog, can be recoved to an exaxct point
+
+you could recover to latest cloud backup and use the continous oplog to go further
+
+required access: Project vbackup manager or project owner
+
+
+# mONGO DB enterprisde advanced
+ if you have the enterprise license
+
+ - Ops manager / cloud manager --> ops manager is complex to set up (configure your own system to store the backups), cloud manager is simple --> both are incremental
+ - additionally:
+
+    you have mongodump + file system recovery (disk image)
+
+
+# self service backups
+
+document level
+    - logical
+    - mongodump / mongorestore
+    - mongoexport / mongoimport
+
+filesystem level:
+    - physical
+    - copy files  -> danger
+    - volumne / disk snapshots
+
+
+# mongodump
+
+is the simplest option
+
+recovery:
+    - create the dump  -> its a bson file
+    - restore the dump file
+
+It has a lot of options you can restore since a point, you can chose to include hte oplog or not in the recovery
+
+- can create backups of:
+    - databases
+    - collecitons
+    - documents retrieved by a query
+
+PROS:
+    - simple
+    - can baxckup a subset
+    - bson is not excesively heavy
+CONS:
+    - LARGE BASCKUPS are slow
+    - can not be used in a sharded cluster
+
+command options:
+    --db
+    --collection
+    --oplog
+    --query/filter
+    -- <more>
+
+
+### mongo restore options
+    ...
+
+# File system level
+
+## physical  backups
+    - stop accepting writes:
+        db.fsyncLock()
+        <do the copy>
+        db.fsyncUnlock()
+
